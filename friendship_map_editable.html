@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Friendship Map</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blue:   #2563EB;
+    --blue-lt:#EFF6FF;
+    --green:  #16A34A;
+    --green-lt:#F0FDF4;
+    --purple: #7C3AED;
+    --purple-lt:#F5F3FF;
+    --pink:   #DB2777;
+    --pink-lt:#FDF2F8;
+    --orange: #EA580C;
+    --orange-lt:#FFF7ED;
+    --yellow: #D97706;
+    --yellow-lt:#FFFBEB;
+    --gray:   #64748B;
+    --border: #CBD5E1;
+    --bg:     #F8FAFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Print / edit toggle bar ── */
+  .toolbar {
+    background: #1E293B;
+    color: white;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .toolbar span { color: #94A3B8; }
+  .btn-print {
+    background: #2563EB;
+    color: white;
+    border: none;
+    padding: 7px 18px;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .btn-print:hover { background: #1D4ED8; }
+  .tip {
+    background: #0F172A;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #7DD3FC;
+  }
+
+  /* ── Page wrapper ── */
+  .page {
+    max-width: 860px;
+    margin: 24px auto;
+    background: white;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.10);
+  }
+
+  /* ── Header ── */
+  .header {
+    background: var(--blue);
+    padding: 22px 32px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute;
+    right: -40px; top: -40px;
+    width: 180px; height: 180px;
+    background: rgba(255,255,255,0.07);
+    border-radius: 50%;
+  }
+  .header::after {
+    content: '';
+    position: absolute;
+    right: 60px; bottom: -30px;
+    width: 110px; height: 110px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 50%;
+  }
+  .header-title {
+    color: white;
+    font-size: 26px;
+    font-weight: 900;
+    letter-spacing: -0.5px;
+  }
+  .header-sub {
+    color: rgba(255,255,255,0.75);
+    font-size: 13px;
+    margin-top: 2px;
+    font-weight: 600;
+  }
+  .header-accent {
+    display: inline-block;
+    background: #FBBF24;
+    color: #1E293B;
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-top: 8px;
+    letter-spacing: .03em;
+  }
+
+  /* ── Meta row ── */
+  .meta-row {
+    background: #EFF6FF;
+    border-bottom: 2px solid #DBEAFE;
+    padding: 12px 32px;
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .meta-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue);
+  }
+  .meta-field [contenteditable] {
+    min-width: 120px;
+    background: white;
+    border: 1.5px solid #BFDBFE;
+    border-radius: 8px;
+    padding: 4px 10px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1E293B;
+    outline: none;
+  }
+  .meta-field [contenteditable]:focus { border-color: var(--blue); }
+
+  /* ── Body ── */
+  .body { padding: 24px 28px 28px; display: flex; flex-direction: column; gap: 18px; }
+
+  /* ── Section ── */
+  .section { display: flex; flex-direction: column; gap: 10px; }
+  .sec-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 800;
+    color: white;
+  }
+  .sec-header .num {
+    background: rgba(255,255,255,0.25);
+    border-radius: 6px;
+    padding: 1px 7px;
+    font-size: 12px;
+  }
+
+  .sec-blue   { background: var(--blue); }
+  .sec-green  { background: var(--green); }
+  .sec-purple { background: var(--purple); }
+
+  /* ── Card grid ── */
+  .card-grid { display: grid; gap: 12px; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+  .card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 130px;
+  }
+  .card-label {
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .04em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px dashed var(--border);
+  }
+  .card-label.blue   { color: var(--blue); }
+  .card-label.green  { color: var(--green); }
+  .card-label.purple { color: var(--purple); }
+  .card-label.pink   { color: var(--pink); }
+  .card-label.orange { color: var(--orange); }
+
+  .card-hint {
+    font-size: 11px;
+    color: #94A3B8;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  /* editable area */
+  .edit-area {
+    flex: 1;
+    min-height: 60px;
+    border: none;
+    outline: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    color: #1E293B;
+    font-weight: 600;
+    resize: none;
+    width: 100%;
+    line-height: 1.7;
+    background: transparent;
+  }
+  .edit-area:focus {
+    background: #F8FAFF;
+    border-radius: 6px;
+    padding: 4px 6px;
+  }
+
+  /* draw area */
+  .draw-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .canvas-area {
+    border: 1.5px dashed #CBD5E1;
+    border-radius: 10px;
+    cursor: crosshair;
+    background: #FAFBFF;
+    display: block;
+    width: 100%;
+    touch-action: none;
+  }
+  .draw-controls {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .color-dot {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform .1s;
+  }
+  .color-dot:hover, .color-dot.active { border-color: #1E293B; transform: scale(1.2); }
+  .btn-erase, .btn-clear {
+    background: #F1F5F9;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+    color: #475569;
+  }
+  .btn-erase:hover, .btn-clear:hover { background: #E2E8F0; }
+  .stroke-slider { width: 60px; accent-color: var(--blue); }
+
+  /* map area */
+  .map-card {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .map-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* ── Message row ── */
+  .msg-row {
+    background: #FFFBEB;
+    border: 1.5px solid #FDE68A;
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .msg-label {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--yellow);
+    white-space: nowrap;
+  }
+  .msg-input {
+    flex: 1;
+    border: none;
+    border-bottom: 2px solid #FDE68A;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: #1E293B;
+    outline: none;
+    padding: 2px 4px;
+  }
+  .msg-input:focus { border-color: var(--yellow); }
+
+  /* ── Print styles ── */
+  @media print {
+    .toolbar { display: none !important; }
+    body { background: white; }
+    .page { box-shadow: none; margin: 0; border-radius: 0; max-width: 100%; }
+    .canvas-area { border: 1px dashed #ccc; }
+    .draw-controls { display: none; }
+    .edit-area { border-bottom: 1px solid #e2e8f0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div class="toolbar">
+  <span>✏️ 클릭하면 바로 수정 가능해요!</span>
+  <div class="tip">🖊️ 텍스트 → 클릭 후 입력</div>
+  <div class="tip">🎨 그림 → 캔버스에 마우스로 드로잉</div>
+  <button class="btn-print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+</div>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-title">🌍 World Friendship Map</div>
+    <div class="header-sub">우리 모둠 우정 지도</div>
+    <div class="header-accent">Hi-Learning · 3학년 영어 · World Friends</div>
+  </div>
+
+  <!-- Meta -->
+  <div class="meta-row">
+    <div class="meta-field">
+      🏫 반:
+      <div contenteditable="true" spellcheck="false">___반</div>
+    </div>
+    <div class="meta-field">
+      👥 모둠:
+      <div contenteditable="true" spellcheck="false">___모둠</div>
+    </div>
+    <div class="meta-field">
+      ✍️ 모둠원:
+      <div contenteditable="true" spellcheck="false" style="min-width:200px">이름을 써주세요</div>
+    </div>
+    <div class="meta-field">
+      🗺️ 우리 나라:
+      <div contenteditable="true" spellcheck="false" style="min-width:90px;color:var(--blue);font-weight:800">나라 이름</div>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <!-- SECTION 1 : Greeting & Flag -->
+    <div class="section">
+      <div class="sec-header sec-blue">
+        <span class="num">1</span>
+        👋 Greeting &amp; Flag &nbsp;|&nbsp; 인사법과 국기
+      </div>
+      <div class="card-grid cols-2">
+
+        <!-- Greeting -->
+        <div class="card">
+          <div class="card-label blue">🗣️ GREETING · 인사법</div>
+          <div class="card-hint">이 나라 인사말을 영어로 써보세요!</div>
+          <textarea class="edit-area" placeholder="예) Hello! / Bonjour! / Annyeong!&#10;&#10;한국어로도 써봐요 😊"></textarea>
+        </div>
+
+        <!-- Flag draw -->
+        <div class="card">
+          <div class="card-label pink">🎨 FLAG · 국기 그리기</div>
+          <div class="draw-wrap">
+            <canvas class="canvas-area" id="canvas-flag" height="100"></canvas>
+            <div class="draw-controls">
+              <span style="font-size:11px;color:#94A3B8;font-weight:700">색:</span>
+              <div class="color-dot active" style="background:#EF4444" data-color="#EF4444" data-canvas="canvas-flag"></div>
+              <div class="color-dot" style="background:#3B82F6" data-color="#3B82F6" data-canvas="canvas-flag"></div>
+              <div class="color-dot" style="background:#22C55E" data-color="#22C55E" data-canvas="canvas-flag"></div>
+              <div class="color-dot" style="background:#FBBF24" data-color="#FBBF24" data-canvas="canvas-flag"></div>
+              <div class="color-dot" style="background:#1E293B" data-color="#1E293B" data-canvas="canvas-flag"></div>
+              <div class="color-dot" style="background:#FFFFFF;border:1.5px solid #CBD5E1" data-color="#FFFFFF" data-canvas="canvas-flag"></div>
+              <button class="btn-erase" data-canvas="canvas-flag">지우개</button>
+              <button class="btn-clear" data-canvas="canvas-flag">전체 지우기</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 2 : Location & Landmark -->
+    <div class="section">
+      <div class="sec-header sec-green">
+        <span class="num">2</span>
+        🗺️ Location &amp; Landmark &nbsp;|&nbsp; 세계 지도 위치와 랜드마크
+      </div>
+      <div class="card-grid cols-2">
+
+        <!-- Map location draw -->
+        <div class="card">
+          <div class="card-label green">🌍 MAP LOCATION · 세계 지도 위치</div>
+          <div class="card-hint">지도에서 이 나라를 찾아 동그라미로 표시하고 이름을 써요!</div>
+          <div class="draw-wrap">
+            <canvas class="canvas-area" id="canvas-map" height="100"></canvas>
+            <div class="draw-controls">
+              <div class="color-dot active" style="background:#EF4444" data-color="#EF4444" data-canvas="canvas-map"></div>
+              <div class="color-dot" style="background:#3B82F6" data-color="#3B82F6" data-canvas="canvas-map"></div>
+              <div class="color-dot" style="background:#1E293B" data-color="#1E293B" data-canvas="canvas-map"></div>
+              <div class="color-dot" style="background:#FBBF24" data-color="#FBBF24" data-canvas="canvas-map"></div>
+              <button class="btn-erase" data-canvas="canvas-map">지우개</button>
+              <button class="btn-clear" data-canvas="canvas-map">전체 지우기</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Landmark draw + text -->
+        <div class="card">
+          <div class="card-label orange">🏛️ LANDMARK · 유명한 장소</div>
+          <div class="card-hint">유명한 장소를 그리거나 이름을 써요!</div>
+          <div class="draw-wrap">
+            <canvas class="canvas-area" id="canvas-land" height="70"></canvas>
+            <div class="draw-controls">
+              <div class="color-dot active" style="background:#EA580C" data-color="#EA580C" data-canvas="canvas-land"></div>
+              <div class="color-dot" style="background:#3B82F6" data-color="#3B82F6" data-canvas="canvas-land"></div>
+              <div class="color-dot" style="background:#22C55E" data-color="#22C55E" data-canvas="canvas-land"></div>
+              <div class="color-dot" style="background:#1E293B" data-color="#1E293B" data-canvas="canvas-land"></div>
+              <button class="btn-erase" data-canvas="canvas-land">지우개</button>
+              <button class="btn-clear" data-canvas="canvas-land">전체 지우기</button>
+            </div>
+          </div>
+          <textarea class="edit-area" style="min-height:30px;font-size:13px" placeholder="장소 이름:                    "></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SECTION 3 : Friends & Costume -->
+    <div class="section">
+      <div class="sec-header sec-purple">
+        <span class="num">3</span>
+        🤝 World Friend &amp; Costume &nbsp;|&nbsp; 세계 친구와 전통 의상
+      </div>
+      <div class="card-grid cols-2">
+
+        <!-- Friend photo/draw -->
+        <div class="card">
+          <div class="card-label blue">📷 WORLD FRIEND · 세계 친구</div>
+          <div class="card-hint">이 나라 친구를 그리거나 사진을 붙여요!</div>
+          <div class="draw-wrap">
+            <canvas class="canvas-area" id="canvas-friend" height="100"></canvas>
+            <div class="draw-controls">
+              <div class="color-dot active" style="background:#1E293B" data-color="#1E293B" data-canvas="canvas-friend"></div>
+              <div class="color-dot" style="background:#EF4444" data-color="#EF4444" data-canvas="canvas-friend"></div>
+              <div class="color-dot" style="background:#FBBF24" data-color="#FBBF24" data-canvas="canvas-friend"></div>
+              <div class="color-dot" style="background:#22C55E" data-color="#22C55E" data-canvas="canvas-friend"></div>
+              <div class="color-dot" style="background:#A78BFA" data-color="#A78BFA" data-canvas="canvas-friend"></div>
+              <button class="btn-erase" data-canvas="canvas-friend">지우개</button>
+              <button class="btn-clear" data-canvas="canvas-friend">전체 지우기</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Costume draw -->
+        <div class="card">
+          <div class="card-label purple">👘 TRADITIONAL COSTUME · 전통 의상</div>
+          <div class="card-hint">전통 의상을 그리거나 설명을 써요!</div>
+          <div class="draw-wrap">
+            <canvas class="canvas-area" id="canvas-costume" height="80"></canvas>
+            <div class="draw-controls">
+              <div class="color-dot active" style="background:#7C3AED" data-color="#7C3AED" data-canvas="canvas-costume"></div>
+              <div class="color-dot" style="background:#EF4444" data-color="#EF4444" data-canvas="canvas-costume"></div>
+              <div class="color-dot" style="background:#FBBF24" data-color="#FBBF24" data-canvas="canvas-costume"></div>
+              <div class="color-dot" style="background:#1E293B" data-color="#1E293B" data-canvas="canvas-costume"></div>
+              <div class="color-dot" style="background:#22C55E" data-color="#22C55E" data-canvas="canvas-costume"></div>
+              <button class="btn-erase" data-canvas="canvas-costume">지우개</button>
+              <button class="btn-clear" data-canvas="canvas-costume">전체 지우기</button>
+            </div>
+          </div>
+          <textarea class="edit-area" style="min-height:28px;font-size:13px" placeholder="의상 이름이나 특징을 써봐요!"></textarea>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Message row -->
+    <div class="msg-row">
+      <div class="msg-label">💌 Our message:</div>
+      <input class="msg-input" type="text" placeholder="전 세계 친구들에게 영어로 한 마디!  예) We are all friends! / Nice to meet you!">
+    </div>
+
+  </div><!-- /body -->
+</div><!-- /page -->
+
+<script>
+// ── Drawing engine ─────────────────────────────────────────────────────
+const canvasState = {};
+
+function initCanvas(id) {
+  const canvas = document.getElementById(id);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  // set display width
+  canvas.width = canvas.offsetWidth || 300;
+  canvasState[id] = { color: '#EF4444', size: 3, eraser: false, drawing: false, lastX:0, lastY:0 };
+
+  function getPos(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    if (e.touches) {
+      return [(e.touches[0].clientX - rect.left)*scaleX, (e.touches[0].clientY - rect.top)*scaleY];
+    }
+    return [(e.clientX - rect.left)*scaleX, (e.clientY - rect.top)*scaleY];
+  }
+
+  function startDraw(e) {
+    e.preventDefault();
+    canvasState[id].drawing = true;
+    const [x,y] = getPos(e);
+    canvasState[id].lastX = x;
+    canvasState[id].lastY = y;
+    ctx.beginPath();
+    ctx.arc(x, y, canvasState[id].size/2, 0, Math.PI*2);
+    ctx.fillStyle = canvasState[id].eraser ? '#FAFBFF' : canvasState[id].color;
+    ctx.fill();
+  }
+  function doDraw(e) {
+    e.preventDefault();
+    if (!canvasState[id].drawing) return;
+    const [x,y] = getPos(e);
+    ctx.beginPath();
+    ctx.moveTo(canvasState[id].lastX, canvasState[id].lastY);
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = canvasState[id].eraser ? '#FAFBFF' : canvasState[id].color;
+    ctx.lineWidth = canvasState[id].size;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.stroke();
+    canvasState[id].lastX = x;
+    canvasState[id].lastY = y;
+  }
+  function stopDraw() { canvasState[id].drawing = false; }
+
+  canvas.addEventListener('mousedown', startDraw);
+  canvas.addEventListener('mousemove', doDraw);
+  canvas.addEventListener('mouseup', stopDraw);
+  canvas.addEventListener('mouseleave', stopDraw);
+  canvas.addEventListener('touchstart', startDraw, {passive:false});
+  canvas.addEventListener('touchmove', doDraw, {passive:false});
+  canvas.addEventListener('touchend', stopDraw);
+}
+
+// color dots
+document.querySelectorAll('.color-dot').forEach(dot => {
+  dot.addEventListener('click', () => {
+    const cid = dot.dataset.canvas;
+    if (!canvasState[cid]) return;
+    canvasState[cid].color = dot.dataset.color;
+    canvasState[cid].eraser = false;
+    document.querySelectorAll(`.color-dot[data-canvas="${cid}"]`).forEach(d => d.classList.remove('active'));
+    dot.classList.add('active');
+  });
+});
+
+// erase
+document.querySelectorAll('.btn-erase').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cid = btn.dataset.canvas;
+    if (canvasState[cid]) {
+      canvasState[cid].eraser = !canvasState[cid].eraser;
+      btn.textContent = canvasState[cid].eraser ? '✏️ 그리기' : '지우개';
+    }
+  });
+});
+
+// clear
+document.querySelectorAll('.btn-clear').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const cid = btn.dataset.canvas;
+    const canvas = document.getElementById(cid);
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
+});
+
+// init all canvases after layout
+window.addEventListener('load', () => {
+  ['canvas-flag','canvas-map','canvas-land','canvas-friend','canvas-costume'].forEach(id => {
+    initCanvas(id);
+  });
+});
+</script>
+</body>
+</html>

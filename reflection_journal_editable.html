@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Reflection Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --yellow: #F59E0B;
+    --yellow-lt: #FFFBEB;
+    --blue:   #2563EB;
+    --blue-lt: #EFF6FF;
+    --green:  #16A34A;
+    --green-lt: #F0FDF4;
+    --pink:   #EC4899;
+    --pink-lt: #FDF2F8;
+    --purple: #7C3AED;
+    --purple-lt: #F5F3FF;
+    --orange: #EA580C;
+    --border: #E2E8F0;
+    --bg:     #FFFDF5;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+  }
+
+  /* toolbar */
+  .toolbar {
+    background: #1E293B;
+    color: white;
+    padding: 10px 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .toolbar span { color: #94A3B8; }
+  .tip {
+    background: #0F172A;
+    border: 1px solid #334155;
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: #7DD3FC;
+  }
+  .btn-print {
+    background: #F59E0B;
+    color: #1E293B;
+    border: none;
+    padding: 7px 18px;
+    border-radius: 8px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .btn-print:hover { background: #D97706; color: white; }
+
+  /* page */
+  .page {
+    max-width: 720px;
+    margin: 24px auto;
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.09);
+  }
+
+  /* header */
+  .header {
+    background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+    padding: 24px 32px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '📓';
+    font-size: 80px;
+    position: absolute;
+    right: 24px; top: 10px;
+    opacity: 0.18;
+  }
+  .header-title {
+    color: #1E293B;
+    font-size: 24px;
+    font-weight: 900;
+  }
+  .header-sub {
+    color: rgba(30,41,59,0.65);
+    font-size: 13px;
+    margin-top: 3px;
+    font-weight: 700;
+  }
+  .header-badge {
+    display: inline-block;
+    background: white;
+    color: var(--orange);
+    font-size: 11px;
+    font-weight: 800;
+    padding: 3px 12px;
+    border-radius: 20px;
+    margin-top: 10px;
+  }
+
+  /* meta */
+  .meta-row {
+    background: var(--yellow-lt);
+    border-bottom: 2px solid #FDE68A;
+    padding: 11px 32px;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .meta-field {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 13px;
+    font-weight: 800;
+    color: #92400E;
+  }
+  .meta-field [contenteditable] {
+    min-width: 90px;
+    background: white;
+    border: 1.5px solid #FDE68A;
+    border-radius: 8px;
+    padding: 3px 10px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: #1E293B;
+    outline: none;
+  }
+  .meta-field [contenteditable]:focus { border-color: var(--yellow); }
+
+  /* body */
+  .body { padding: 24px 28px 32px; display: flex; flex-direction: column; gap: 16px; }
+
+  /* question card */
+  .q-card {
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    border: 1.5px solid var(--border);
+    background: white;
+  }
+  .q-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .q-num {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900;
+    color: white;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .q-text {
+    font-size: 14px;
+    font-weight: 800;
+    color: #1E293B;
+    line-height: 1.5;
+  }
+  .q-sub {
+    font-size: 12px;
+    font-weight: 600;
+    color: #94A3B8;
+    margin-left: 38px;
+  }
+  .q-input {
+    margin-left: 38px;
+    border: none;
+    border-bottom: 2px dashed #E2E8F0;
+    background: transparent;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #1E293B;
+    outline: none;
+    width: calc(100% - 38px);
+    padding: 4px 2px;
+    line-height: 1.6;
+    resize: none;
+    min-height: 36px;
+  }
+  .q-input:focus { border-bottom-color: #94A3B8; background: #FAFBFF; border-radius: 4px; padding: 4px 6px; }
+
+  /* color variants */
+  .q-card.yellow { background: var(--yellow-lt); border-color: #FDE68A; }
+  .q-card.blue   { background: var(--blue-lt);   border-color: #BFDBFE; }
+  .q-card.green  { background: var(--green-lt);  border-color: #BBF7D0; }
+  .q-card.pink   { background: var(--pink-lt);   border-color: #FBCFE8; }
+  .q-card.purple { background: var(--purple-lt); border-color: #DDD6FE; }
+
+  .num-yellow { background: var(--yellow); }
+  .num-blue   { background: var(--blue); }
+  .num-green  { background: var(--green); }
+  .num-pink   { background: var(--pink); }
+  .num-purple { background: var(--purple); }
+
+  /* star rating */
+  .star-section {
+    background: #FFFBEB;
+    border: 1.5px solid #FDE68A;
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .star-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #92400E;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .star-rows { display: flex; flex-direction: column; gap: 10px; }
+  .star-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .star-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #78350F;
+    width: 160px;
+    flex-shrink: 0;
+  }
+  .stars {
+    display: flex;
+    gap: 6px;
+  }
+  .star {
+    font-size: 26px;
+    cursor: pointer;
+    color: #D1D5DB;
+    transition: color .15s, transform .1s;
+    user-select: none;
+    line-height: 1;
+  }
+  .star:hover { transform: scale(1.2); }
+  .star.lit { color: #FBBF24; }
+
+  /* draw mood */
+  .mood-section {
+    background: #F5F3FF;
+    border: 1.5px solid #DDD6FE;
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .mood-title {
+    font-size: 14px;
+    font-weight: 800;
+    color: #4C1D95;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .mood-faces {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  .face-btn {
+    font-size: 34px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 14px;
+    padding: 6px 10px;
+    background: white;
+    transition: border-color .15s, transform .1s;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .face-btn span {
+    font-size: 11px;
+    font-weight: 700;
+    color: #7C3AED;
+  }
+  .face-btn:hover { transform: scale(1.1); border-color: #C4B5FD; }
+  .face-btn.selected { border-color: #7C3AED; background: #EDE9FE; }
+
+  /* bottom message */
+  .bottom-msg {
+    background: #F0FDF4;
+    border: 1.5px solid #BBF7D0;
+    border-radius: 14px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .bottom-icon { font-size: 22px; flex-shrink: 0; }
+  .bottom-text {
+    font-size: 13px;
+    font-weight: 700;
+    color: #14532D;
+    line-height: 1.5;
+  }
+
+  @media print {
+    .toolbar { display: none !important; }
+    body { background: white; }
+    .page { box-shadow: none; margin: 0; border-radius: 0; max-width: 100%; }
+    .face-btn { border: 1px solid #ddd; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <span>✏️ 클릭하면 바로 입력돼요!</span>
+  <div class="tip">⭐ 별을 클릭해서 점수 매기기</div>
+  <div class="tip">😊 표정도 클릭으로 선택</div>
+  <button class="btn-print" onclick="window.print()">🖨️ 인쇄 / PDF 저장</button>
+</div>
+
+<div class="page">
+
+  <div class="header">
+    <div class="header-title">📓 My Reflection Journal</div>
+    <div class="header-sub">나의 성찰 저널 · World Friends</div>
+    <div class="header-badge">3학년 영어 · Hi-Learning</div>
+  </div>
+
+  <div class="meta-row">
+    <div class="meta-field">🏫 반: <div contenteditable="true" spellcheck="false">___반</div></div>
+    <div class="meta-field">✏️ 이름: <div contenteditable="true" spellcheck="false">이름 쓰기</div></div>
+    <div class="meta-field">📅 날짜: <div contenteditable="true" spellcheck="false">____년 ____월 ____일</div></div>
+    <div class="meta-field">🗺️ 우리 나라: <div contenteditable="true" spellcheck="false" style="min-width:80px;color:#D97706;font-weight:900">나라 이름</div></div>
+  </div>
+
+  <div class="body">
+
+    <!-- Q1 -->
+    <div class="q-card yellow">
+      <div class="q-top">
+        <div class="q-num num-yellow">1</div>
+        <div class="q-text">🌍 오늘 가장 신기했던 나라는 어디인가요?<br><span style="font-size:12px;font-weight:600;color:#92400E">What was the most interesting country today?</span></div>
+      </div>
+      <div class="q-sub">나라 이름과 이유를 함께 써봐요!</div>
+      <textarea class="q-input" rows="2" placeholder="예) 프랑스가 신기했어요. 왜냐하면 Bonjour!라고 인사하기 때문이에요."></textarea>
+    </div>
+
+    <!-- Q2 -->
+    <div class="q-card blue">
+      <div class="q-top">
+        <div class="q-num num-blue">2</div>
+        <div class="q-text">👋 오늘 가장 마음에 든 인사말은 무엇인가요?<br><span style="font-size:12px;font-weight:600;color:#1D4ED8">What was your favourite greeting today?</span></div>
+      </div>
+      <div class="q-sub">인사말을 영어로 따라 써봐요!</div>
+      <textarea class="q-input" rows="2" placeholder="예) Bonjour! (봉주르) – 프랑스 인사예요. 발음이 예뻐요!"></textarea>
+    </div>
+
+    <!-- Q3 -->
+    <div class="q-card green">
+      <div class="q-top">
+        <div class="q-num num-green">3</div>
+        <div class="q-text">💡 오늘 새롭게 알게 된 것을 한 가지 써봐요!<br><span style="font-size:12px;font-weight:600;color:#166534">What did you learn today?</span></div>
+      </div>
+      <div class="q-sub">영어로 써도 좋아요!</div>
+      <textarea class="q-input" rows="2" placeholder="예) 스페인에서는 ¡Hola! (올라)라고 인사한다는 것을 알게 됐어요."></textarea>
+    </div>
+
+    <!-- Q4 -->
+    <div class="q-card pink">
+      <div class="q-top">
+        <div class="q-num num-pink">4</div>
+        <div class="q-text">🤝 만나고 싶은 세계 친구가 생겼나요?<br><span style="font-size:12px;font-weight:600;color:#9D174D">Which country's friend do you want to meet?</span></div>
+      </div>
+      <div class="q-sub">어느 나라 친구이고 왜 만나고 싶은지 써봐요!</div>
+      <textarea class="q-input" rows="2" placeholder="예) 일본 친구를 만나고 싶어요. 왜냐하면 일본 전통 옷이 정말 예쁘기 때문이에요."></textarea>
+    </div>
+
+    <!-- Q5 -->
+    <div class="q-card purple">
+      <div class="q-top">
+        <div class="q-num num-purple">5</div>
+        <div class="q-text">⭐ 우리 모둠에서 가장 열심히 한 친구는 누구인가요?<br><span style="font-size:12px;font-weight:600;color:#5B21B6">Who was the most helpful friend?</span></div>
+      </div>
+      <div class="q-sub">친구 이름과 칭찬하는 이유를 써줘요!</div>
+      <textarea class="q-input" rows="2" placeholder="예) ○○이가 국기를 제일 잘 그려줬어요! 덕분에 우정 지도가 예뻐졌어요."></textarea>
+    </div>
+
+    <!-- Star rating -->
+    <div class="star-section">
+      <div class="star-title">🌟 오늘 수업은 어땠나요? (별을 클릭해서 점수를 매겨봐요!)</div>
+      <div class="star-rows">
+        <div class="star-row">
+          <div class="star-label">😄 재미있었나요? (Fun)</div>
+          <div class="stars" data-group="fun">
+            <div class="star" data-val="1">★</div>
+            <div class="star" data-val="2">★</div>
+            <div class="star" data-val="3">★</div>
+            <div class="star" data-val="4">★</div>
+            <div class="star" data-val="5">★</div>
+          </div>
+        </div>
+        <div class="star-row">
+          <div class="star-label">🤝 친구들과 사이좋게? (Teamwork)</div>
+          <div class="stars" data-group="team">
+            <div class="star" data-val="1">★</div>
+            <div class="star" data-val="2">★</div>
+            <div class="star" data-val="3">★</div>
+            <div class="star" data-val="4">★</div>
+            <div class="star" data-val="5">★</div>
+          </div>
+        </div>
+        <div class="star-row">
+          <div class="star-label">💪 열심히 참여했나요? (Effort)</div>
+          <div class="stars" data-group="effort">
+            <div class="star" data-val="1">★</div>
+            <div class="star" data-val="2">★</div>
+            <div class="star" data-val="3">★</div>
+            <div class="star" data-val="4">★</div>
+            <div class="star" data-val="5">★</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mood -->
+    <div class="mood-section">
+      <div class="mood-title">😊 지금 내 기분은? (클릭해서 골라봐요!)</div>
+      <div class="mood-faces">
+        <div class="face-btn" data-mood="happy">😄<span>신나요!</span></div>
+        <div class="face-btn" data-mood="good">🙂<span>좋아요</span></div>
+        <div class="face-btn" data-mood="soso">😐<span>보통이에요</span></div>
+        <div class="face-btn" data-mood="curious">🤔<span>궁금해요</span></div>
+        <div class="face-btn" data-mood="tired">😅<span>힘들었어요</span></div>
+        <div class="face-btn" data-mood="love">🥰<span>최고예요!</span></div>
+      </div>
+    </div>
+
+    <!-- Bottom encouragement -->
+    <div class="bottom-msg">
+      <div class="bottom-icon">🌱</div>
+      <div class="bottom-text">
+        오늘도 세계 친구들을 만나러 한 걸음 더 나아갔어요!<br>
+        <span style="color:#16A34A">Great job today! You are a World Friend! 🌍</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// Star rating
+document.querySelectorAll('.stars').forEach(group => {
+  const stars = group.querySelectorAll('.star');
+  stars.forEach(star => {
+    star.addEventListener('click', () => {
+      const val = parseInt(star.dataset.val);
+      stars.forEach(s => {
+        s.classList.toggle('lit', parseInt(s.dataset.val) <= val);
+      });
+    });
+    star.addEventListener('mouseover', () => {
+      const val = parseInt(star.dataset.val);
+      stars.forEach(s => {
+        s.style.color = parseInt(s.dataset.val) <= val ? '#FBBF24' : '';
+      });
+    });
+    star.addEventListener('mouseout', () => {
+      stars.forEach(s => { s.style.color = ''; });
+    });
+  });
+});
+
+// Mood faces
+document.querySelectorAll('.face-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.face-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+});
+</script>
+</body>
+</html>

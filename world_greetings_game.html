@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Friends – Greeting Match Game 🌍</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: linear-gradient(135deg, #e8f4fd 0%, #fef9e7 50%, #e8f8f0 100%);
+    min-height: 100vh;
+    padding: 20px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 1.8rem;
+    color: #2c3e50;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #7f8c8d;
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+  }
+  .score-bar {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    background: white;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 0.9rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    color: #555;
+  }
+  .pill span { font-weight: 700; color: #2c3e50; }
+  .game-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-width: 700px;
+    margin: 0 auto 24px;
+  }
+  .col-title {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #95a5a6;
+    margin-bottom: 8px;
+  }
+  .column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .card {
+    background: white;
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    transition: transform .15s, border-color .15s, background .15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1rem;
+    color: #2c3e50;
+    user-select: none;
+    min-height: 58px;
+  }
+  .card:hover { transform: scale(1.02); border-color: #bdc3c7; }
+  .card.selected { border-color: #3498db; background: #ebf5fb; }
+  .card.correct { border-color: #27ae60; background: #eafaf1; cursor: default; }
+  .card.wrong { border-color: #e74c3c; background: #fdedec; animation: shake .3s; }
+  .card.dimmed { opacity: .35; pointer-events: none; }
+  .flag { font-size: 1.6rem; }
+  @keyframes shake {
+    0%,100%{transform:translateX(0)}
+    25%{transform:translateX(-6px)}
+    75%{transform:translateX(6px)}
+  }
+  .btn-row { text-align: center; margin-top: 8px; }
+  .btn {
+    padding: 12px 32px;
+    border-radius: 30px;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 600;
+    transition: transform .15s, opacity .15s;
+  }
+  .btn:hover { transform: scale(1.04); }
+  .btn-reset { background: #3498db; color: white; margin-right: 10px; }
+  .btn-hint  { background: #f39c12; color: white; }
+  .message {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: 600;
+    min-height: 28px;
+    color: #27ae60;
+    margin-bottom: 10px;
+  }
+  .progress-wrap {
+    max-width: 700px;
+    margin: 0 auto 18px;
+  }
+  .progress-bar {
+    height: 8px;
+    background: #ecf0f1;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #27ae60, #2ecc71);
+    border-radius: 10px;
+    transition: width .4s;
+  }
+  .complete-banner {
+    display: none;
+    text-align: center;
+    background: white;
+    border-radius: 20px;
+    padding: 30px 24px;
+    max-width: 400px;
+    margin: 0 auto;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+  .complete-banner .emoji { font-size: 3rem; }
+  .complete-banner h2 { color: #2c3e50; margin: 12px 0 6px; font-size: 1.5rem; }
+  .complete-banner p { color: #7f8c8d; font-size: 0.95rem; }
+</style>
+</head>
+<body>
+
+<h1>🌍 World Friends</h1>
+<p class="subtitle">Match the country with its greeting! 나라와 인사말을 연결하세요!</p>
+
+<div class="score-bar">
+  <div class="pill">✅ Matched: <span id="matched">0</span> / <span id="total">0</span></div>
+  <div class="pill">⭐ Score: <span id="score">0</span></div>
+  <div class="pill">❌ Mistakes: <span id="mistakes">0</span></div>
+</div>
+
+<div class="progress-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+</div>
+
+<div class="message" id="message"></div>
+
+<div class="game-area">
+  <div>
+    <div class="col-title">🗺️ Country</div>
+    <div class="column" id="col-countries"></div>
+  </div>
+  <div>
+    <div class="col-title">👋 Greeting</div>
+    <div class="column" id="col-greetings"></div>
+  </div>
+</div>
+
+<div class="btn-row">
+  <button class="btn btn-reset" onclick="resetGame()">🔄 New Game</button>
+  <button class="btn btn-hint" onclick="giveHint()">💡 Hint</button>
+</div>
+
+<div class="complete-banner" id="complete">
+  <div class="emoji">🎉</div>
+  <h2>Excellent! All matched!</h2>
+  <p id="final-msg"></p>
+  <br>
+  <button class="btn btn-reset" onclick="resetGame()">🔄 Play Again</button>
+</div>
+
+<script>
+const ALL_PAIRS = [
+  { flag:'🇰🇷', country:'Korea',       greeting:'Annyeong! (안녕!)',    lang:'Korean' },
+  { flag:'🇺🇸', country:'USA',          greeting:'Hello!',               lang:'English' },
+  { flag:'🇫🇷', country:'France',       greeting:'Bonjour!',             lang:'French' },
+  { flag:'🇯🇵', country:'Japan',        greeting:'Konnichiwa! (こんにちは!)', lang:'Japanese' },
+  { flag:'🇪🇸', country:'Spain',        greeting:'¡Hola!',               lang:'Spanish' },
+  { flag:'🇩🇪', country:'Germany',      greeting:'Hallo!',               lang:'German' },
+  { flag:'🇮🇹', country:'Italy',        greeting:'Ciao!',                lang:'Italian' },
+  { flag:'🇧🇷', country:'Brazil',       greeting:'Olá!',                 lang:'Portuguese' },
+  { flag:'🇨🇳', country:'China',        greeting:'Nǐ hǎo! (你好!)',      lang:'Chinese' },
+  { flag:'🇮🇳', country:'India',        greeting:'Namaste! (नमस्ते)',    lang:'Hindi' },
+  { flag:'🇷🇺', country:'Russia',       greeting:'Privet! (Привет!)',     lang:'Russian' },
+  { flag:'🇸🇦', country:'Saudi Arabia', greeting:'Marhaba! (مرحبا!)',     lang:'Arabic' },
+];
+
+let pairs = [];
+let selectedCountry = null;
+let selectedGreeting = null;
+let matched = 0;
+let scoreVal = 0;
+let mistakesVal = 0;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function resetGame() {
+  matched = 0; scoreVal = 0; mistakesVal = 0;
+  selectedCountry = null; selectedGreeting = null;
+  document.getElementById('complete').style.display = 'none';
+  document.getElementById('message').textContent = '';
+  pairs = shuffle(ALL_PAIRS).slice(0, 6);
+  document.getElementById('total').textContent = pairs.length;
+  updateStats();
+  renderCards();
+}
+
+function updateStats() {
+  document.getElementById('matched').textContent = matched;
+  document.getElementById('score').textContent = scoreVal;
+  document.getElementById('mistakes').textContent = mistakesVal;
+  document.getElementById('progress').style.width = (matched / pairs.length * 100) + '%';
+}
+
+function renderCards() {
+  const cCol = document.getElementById('col-countries');
+  const gCol = document.getElementById('col-greetings');
+  cCol.innerHTML = ''; gCol.innerHTML = '';
+
+  const shuffledGreetings = shuffle(pairs);
+
+  pairs.forEach(p => {
+    const c = document.createElement('div');
+    c.className = 'card';
+    c.dataset.id = p.country;
+    c.dataset.type = 'country';
+    c.innerHTML = `<span class="flag">${p.flag}</span><span>${p.country}</span>`;
+    c.addEventListener('click', () => onCardClick(c, 'country'));
+    cCol.appendChild(c);
+  });
+
+  shuffledGreetings.forEach(p => {
+    const g = document.createElement('div');
+    g.className = 'card';
+    g.dataset.id = p.country;
+    g.dataset.type = 'greeting';
+    g.innerHTML = `<span>${p.greeting}</span><span style="font-size:.75rem;color:#95a5a6;margin-left:auto">${p.lang}</span>`;
+    g.addEventListener('click', () => onCardClick(g, 'greeting'));
+    gCol.appendChild(g);
+  });
+}
+
+function onCardClick(card, type) {
+  if (card.classList.contains('correct') || card.classList.contains('dimmed')) return;
+
+  if (type === 'country') {
+    if (selectedCountry) selectedCountry.classList.remove('selected');
+    selectedCountry = card;
+    card.classList.add('selected');
+  } else {
+    if (selectedGreeting) selectedGreeting.classList.remove('selected');
+    selectedGreeting = card;
+    card.classList.add('selected');
+  }
+
+  if (selectedCountry && selectedGreeting) {
+    checkMatch();
+  }
+}
+
+function checkMatch() {
+  const cId = selectedCountry.dataset.id;
+  const gId = selectedGreeting.dataset.id;
+
+  if (cId === gId) {
+    selectedCountry.classList.remove('selected');
+    selectedGreeting.classList.remove('selected');
+    selectedCountry.classList.add('correct');
+    selectedGreeting.classList.add('correct');
+    const pair = pairs.find(p => p.country === cId);
+    document.getElementById('message').textContent = `✅ Great! "${pair.greeting}" is the greeting in ${pair.country}!`;
+    scoreVal += 10;
+    matched++;
+    updateStats();
+    if (matched === pairs.length) setTimeout(showComplete, 600);
+  } else {
+    selectedCountry.classList.add('wrong');
+    selectedGreeting.classList.add('wrong');
+    document.getElementById('message').textContent = '❌ Try again! 다시 해봐요!';
+    mistakesVal++;
+    updateStats();
+    setTimeout(() => {
+      selectedCountry.classList.remove('wrong', 'selected');
+      selectedGreeting.classList.remove('wrong', 'selected');
+      selectedCountry = null;
+      selectedGreeting = null;
+      document.getElementById('message').textContent = '';
+    }, 800);
+    return;
+  }
+  selectedCountry = null;
+  selectedGreeting = null;
+}
+
+function giveHint() {
+  const remaining = pairs.filter(p => {
+    const c = document.querySelector(`#col-countries .card[data-id="${p.country}"]`);
+    return c && !c.classList.contains('correct');
+  });
+  if (remaining.length === 0) return;
+  const pick = remaining[Math.floor(Math.random() * remaining.length)];
+  document.getElementById('message').textContent = `💡 Hint: ${pick.country} says "${pick.greeting}"!`;
+  mistakesVal++;
+  updateStats();
+}
+
+function showComplete() {
+  const banner = document.getElementById('complete');
+  banner.style.display = 'block';
+  const stars = mistakesVal === 0 ? '⭐⭐⭐ Perfect!' : mistakesVal <= 2 ? '⭐⭐ Well done!' : '⭐ Good try!';
+  document.getElementById('final-msg').textContent = `Score: ${scoreVal} pts | Mistakes: ${mistakesVal} | ${stars}`;
+  document.querySelector('.game-area').style.display = 'none';
+}
+
+resetGame();
+</script>
+</body>
+</html>
